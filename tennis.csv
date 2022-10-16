@@ -1,0 +1,11 @@
+Label,O,T,H,W
+-,S,H,H,W
+-,S,H,H,S
++,O,H,H,W
++,R,M,H,W
++,R,C,N,W
+-,R,C,N,S
++,O,C,N,S
+-,S,M,H,W
++,S,C,N,W
++,R,M,N,W

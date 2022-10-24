@@ -52,6 +52,14 @@ class DecisionTreeModel:
         # assign the most common label at this moment to be the label of this node
         if self._is_finished(y, depth):
             u, counts = np.unique(y, return_counts=True)
+            # if len(counts) == 0:
+            #     print('=====')
+            #     print(X)
+            #     print('=====')
+            #     print(y)
+            #     print('=====')
+            #     print(counts)
+            #     print('=====')
             most_common_Label = u[np.argmax(counts)]
             return Node(label=most_common_Label)
 
@@ -65,7 +73,7 @@ class DecisionTreeModel:
         # build DT recursively for each subset
         left_child = self._build_tree(X[left_idx, :], y[left_idx], depth + 1)
         right_child = self._build_tree(X[right_idx, :], y[right_idx], depth + 1)
-        # return ????
+
         return Node(best_split_feat, best_split_value, left_child, right_child)
 
     # check whether stopping criteria meets
@@ -195,47 +203,47 @@ def onehot_map(vocabs):
 
 
 # create dataset
-def create_dataset(file, rang, direction='both', vocabs_oh=None):
-    # get file content into DF
-    df = pd.DataFrame(open(file, "r").readlines(), columns=['ORG_DATA'])
-
-    # split into 3 columns
-    df[['Target', 'Position', 'Sentence']] = df.ORG_DATA.apply(lambda x: pd.Series(str(x).split(" ", 2)))
-
-    # clean up
-    df['check'] = df.apply(lambda x: check_position(x['Sentence'], int(x['Position'])), axis=1)
-    df = df[df['check']]
-
-    before_after = df.apply(lambda x: split_features(x['Sentence'], x['Position'], rang), axis=1)
-
-    if direction == 'before':
-        # get words list around target for each sample
-        df['Words_List'] = before_after.apply(lambda x: x[:rang])
-    elif direction == 'after':
-        df['Words_List'] = before_after.apply(lambda x: x[rang:])
-    else:
-        df['Words_List'] = before_after
-
-    # create vocabulary using Train dataset. Re-use the vovabulary for Dev and Test dataset
-    if vocabs_oh is None:
-        # get vocabulary(unique words)
-        vocabs = df['Words_List'].explode().unique()
-        vocabs = np.append(vocabs, '<UNKNOWN_WORD>')
-        # one hot mapping based on vocabs
-        vocabs_oh = onehot_map(vocabs)
-
-    # replace each word with one hot mapping
-    X = pd.DataFrame(df.Words_List.tolist(), index=df.index)
-    #     X.columns = range(rang*2)
-    X = X.applymap(lambda i: vocabs_oh[i] if i in vocabs_oh else vocabs_oh['<UNKNOWN_WORD>'])
-
-    # Generate one hot mapped feature dataframe
-    temp = X.apply(lambda x: ','.join(x.astype(str)), axis=1)
-    Xs = temp.apply(lambda x: pd.Series(str(x).split(",")))
-
-    y = df['Target']
-
-    return Xs, y, vocabs_oh
+# def create_dataset(file, rang, direction='both', vocabs_oh=None):
+#     # get file content into DF
+#     df = pd.DataFrame(open(file, "r").readlines(), columns=['ORG_DATA'])
+#
+#     # split into 3 columns
+#     df[['Target', 'Position', 'Sentence']] = df.ORG_DATA.apply(lambda x: pd.Series(str(x).split(" ", 2)))
+#
+#     # clean up
+#     df['check'] = df.apply(lambda x: check_position(x['Sentence'], int(x['Position'])), axis=1)
+#     df = df[df['check']]
+#
+#     before_after = df.apply(lambda x: split_features(x['Sentence'], x['Position'], rang), axis=1)
+#
+#     if direction == 'before':
+#         # get words list around target for each sample
+#         df['Words_List'] = before_after.apply(lambda x: x[:rang])
+#     elif direction == 'after':
+#         df['Words_List'] = before_after.apply(lambda x: x[rang:])
+#     else:
+#         df['Words_List'] = before_after
+#
+#     # create vocabulary using Train dataset. Re-use the vovabulary for Dev and Test dataset
+#     if vocabs_oh is None:
+#         # get vocabulary(unique words)
+#         vocabs = df['Words_List'].explode().unique()
+#         vocabs = np.append(vocabs, '<UNKNOWN_WORD>')
+#         # one hot mapping based on vocabs
+#         vocabs_oh = onehot_map(vocabs)
+#
+#     # replace each word with one hot mapping
+#     X = pd.DataFrame(df.Words_List.tolist(), index=df.index)
+#     #     X.columns = range(rang*2)
+#     X = X.applymap(lambda i: vocabs_oh[i] if i in vocabs_oh else vocabs_oh['<UNKNOWN_WORD>'])
+#
+#     # Generate one hot mapped feature dataframe
+#     temp = X.apply(lambda x: ','.join(x.astype(str)), axis=1)
+#     Xs = temp.apply(lambda x: pd.Series(str(x).split(",")))
+#
+#     y = df['Target']
+#
+#     return Xs, y, vocabs_oh
 
 
 def write_dict_to_file(dic, file_name):

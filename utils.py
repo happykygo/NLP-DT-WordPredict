@@ -42,7 +42,7 @@ def create_dataset(file, rang, direction='both', vocabs_oh=None):
     df = df[df['check']]
 
     before_after = df.apply(lambda x: split_features(x['Sentence'], x['Position'], rang), axis=1)
-
+    # print(before_after)
     if direction == 'before':
         # get words list around target for each sample
         df['Words_List'] = before_after.apply(lambda x: x[:rang])
@@ -51,9 +51,22 @@ def create_dataset(file, rang, direction='both', vocabs_oh=None):
     else:
         df['Words_List'] = before_after
 
-    df['duplicated'] = df.duplicated(subset=['Words_List'], keep=False)
-    df = df[~df['duplicated']]
+    # print(df)
 
+    df['words_str'] = df.apply(lambda x: ' '.join(x['Words_List']), axis=1)
+
+
+    #duplicates_df = df[df.duplicated(subset=['words_str', 'Target'], keep=False)]
+    #duplicates_df = duplicates_df[~duplicates_df.duplicated(subset=['words_str', 'Target'])]
+
+
+    df['duplicated_with_target'] = df.duplicated(subset=['words_str', 'Target'])
+    df = df[~df['duplicated_with_target']]
+    df['duplicated_features'] = df.duplicated(subset=['words_str'], keep=False)
+    df = df[~df['duplicated_features']]
+    #df = pd.concat([df, duplicates_df])
+
+    # print(df)
     # create vocabulary using Train dataset. Re-use the vovabulary for Dev and Test dataset
     if vocabs_oh is None:
         # get vocabulary(unique words)

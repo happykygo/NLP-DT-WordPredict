@@ -259,7 +259,7 @@ def _test():
     X_test = df.drop(['Label'], axis=1)
     y_test = df['Label'].apply(lambda x: 0 if x == '+' else 1)
 
-    clf = DecisionTreeModel()
+    clf = DecisionTreeModel(max_depth=20)
     clf.fit(X, y)
 
     y_pred = clf.predict(X_test)

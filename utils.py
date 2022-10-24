@@ -51,6 +51,9 @@ def create_dataset(file, rang, direction='both', vocabs_oh=None):
     else:
         df['Words_List'] = before_after
 
+    df['duplicated'] = df.duplicated(subset=['Words_List'], keep=False)
+    df = df[~df['duplicated']]
+
     # create vocabulary using Train dataset. Re-use the vovabulary for Dev and Test dataset
     if vocabs_oh is None:
         # get vocabulary(unique words)
@@ -61,14 +64,25 @@ def create_dataset(file, rang, direction='both', vocabs_oh=None):
 
     # replace each word with one hot mapping
     X = pd.DataFrame(df.Words_List.tolist(), index=df.index)
+
+    #
+    #
+    # X['Words_List'] = df['Words_List']
+    #
+    # X['duplicated'] = X.duplicated(keep=False)
+    # # print(X)
+    # X['Target'] = df['Target']
+    # X = X[~X['duplicated']]
+
+    y = df['Target']
+    # X.drop(['Target', 'Words_List', 'duplicated'], axis=1)
+
     #     X.columns = range(rang*2)
     X = X.applymap(lambda i: vocabs_oh[i] if i in vocabs_oh else vocabs_oh['<UNKNOWN_WORD>'])
 
     # Generate one hot mapped feature dataframe
     temp = X.apply(lambda x: ','.join(x.astype(str)), axis=1)
     Xs = temp.apply(lambda x: pd.Series(str(x).split(",")))
-
-    y = df['Target']
 
     return Xs, y, vocabs_oh
 

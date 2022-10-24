@@ -30,9 +30,10 @@ def onehot_map(vocabs):
 
 
 # create dataset
-def create_dataset(file, rang, direction='both', vocabs_oh=None):
+def create_dataset(file, rang, direction='both', vocabs_oh=None, frac=1.0):
     # get file content into DF
     df = pd.DataFrame(open(file, "r").readlines(), columns=['ORG_DATA'])
+    df = df.sample(frac=frac)
 
     # split into 3 columns
     df[['Target', 'Position', 'Sentence']] = df.ORG_DATA.apply(lambda x: pd.Series(str(x).split(" ", 2)))
@@ -55,16 +56,13 @@ def create_dataset(file, rang, direction='both', vocabs_oh=None):
 
     df['words_str'] = df.apply(lambda x: ' '.join(x['Words_List']), axis=1)
 
-
-    #duplicates_df = df[df.duplicated(subset=['words_str', 'Target'], keep=False)]
-    #duplicates_df = duplicates_df[~duplicates_df.duplicated(subset=['words_str', 'Target'])]
-
-
+    # remove duplicate rows:
+    # rows with same features and same label - remove all but 1
+    # rows with same features but different labels are all removed
     df['duplicated_with_target'] = df.duplicated(subset=['words_str', 'Target'])
     df = df[~df['duplicated_with_target']]
     df['duplicated_features'] = df.duplicated(subset=['words_str'], keep=False)
     df = df[~df['duplicated_features']]
-    #df = pd.concat([df, duplicates_df])
 
     # print(df)
     # create vocabulary using Train dataset. Re-use the vovabulary for Dev and Test dataset
@@ -78,19 +76,8 @@ def create_dataset(file, rang, direction='both', vocabs_oh=None):
     # replace each word with one hot mapping
     X = pd.DataFrame(df.Words_List.tolist(), index=df.index)
 
-    #
-    #
-    # X['Words_List'] = df['Words_List']
-    #
-    # X['duplicated'] = X.duplicated(keep=False)
-    # # print(X)
-    # X['Target'] = df['Target']
-    # X = X[~X['duplicated']]
-
     y = df['Target']
-    # X.drop(['Target', 'Words_List', 'duplicated'], axis=1)
 
-    #     X.columns = range(rang*2)
     X = X.applymap(lambda i: vocabs_oh[i] if i in vocabs_oh else vocabs_oh['<UNKNOWN_WORD>'])
 
     # Generate one hot mapped feature dataframe

@@ -8,11 +8,12 @@ The dataset used to train and test the model is pre-labelled. Train/ Val/ Test d
 Each line represents a single example sentence containing one of the target words. The first column on each line represents the label (“whether” or “weather”); the second column is the index of the target word in the sentence (starting from 0); the rest of the line includes the sentence itself. Columns are space-separated. The sentences have already been lowercased and tokenized.
 
 ## [Feature Engineering](utils.py)
+Used contextual words features
 1. Validate the target word's position in the sentence
-2. Create list of words occurring before and after the target within specified range
+2. Create list of words occurring before and after the target within specified context window
 3. Create vocabulary based on words list from step 2
 4. Construct one hot mapping dictionary for the vocabulary, which will be re-used on Train/ Dev/ Test dataset
-5. Produce Train Feature dataset using one hot mapping dictionary from step 4
+5. Produce Contextual word features using one hot mapping dictionary from step 4
 
 ## [Decision Tree implementation](decisiontree.py):
 Fit the Decision Tree:
@@ -26,7 +27,7 @@ Inference on Dev/ Test dataset:
 Evaluate model performance with Accuracy score.
 
 ## Experiments and models performance
-1. [Train DT with Different Features](DTFeaturesHeight.ipynb):
+1. [Train DT with Different Context Window](DTFeaturesHeight.ipynb):
    1. One word before the target -- Val_accuracy = 0.7561
    2. One word after the target -- Val_accuracy = 0.7518
    3. One word before and one word after the target -- Val_accuracy = 0.9293, Test_accuracy = 0.9216
